@@ -1,24 +1,21 @@
-#define _GNU_SOURCE
-#include <stdio.h>
-#include <string.h>
+/*
+ * parse.c
+ */
+
+#include "parse.h"
 #include <stdlib.h>
+#include <string.h>
 
 /**
- * @brief Structure that holds the parse context
- * 
+ * @brief Opaque structure that holds the parse context
  */
-typedef struct parse_context_struct {
+struct parse_context_struct {
     int num_fields;
     char ** fields;
     char ** values;
     char * _exemplar;
-} parse_context_t;
+};
 
-/**
- * @brief Allocates and initializes a parse_context_t
- * 
- * @return parse_context_t* pointer to a new parse_context_t or NULL if allocation failed
- */
 parse_context_t * construct_parse_context(void) {
     parse_context_t * parse_ctx_ptr = (parse_context_t *)malloc(sizeof(parse_context_t));
     if (parse_ctx_ptr) {
@@ -30,11 +27,6 @@ parse_context_t * construct_parse_context(void) {
     return parse_ctx_ptr;
 }
 
-/**
- * @brief Destroys a parse_context_t
- * 
- * @param parse_ctx a constructed parse_context pointer
- */
 void destroy_parse_context(parse_context_t * parse_ctx_ptr) {
     free(parse_ctx_ptr->fields);
     free(parse_ctx_ptr->values);
@@ -42,14 +34,7 @@ void destroy_parse_context(parse_context_t * parse_ctx_ptr) {
     free(parse_ctx_ptr);
 }
 
-/**
- * @brief Embues the parser with the fields, order of fields and number of fields to parse and allocates internal data structures for parsing
- * 
- * @param parse_ctx a constructed parse_context pointer
- * @param line null-terminated line containing an exemplar record to embue into the parser context
- * @return int 0 = success, -1 = memory allocation faillure, -2 = no fields found in line
- */
-int embue_parser(parse_context_t * parse_ctx_ptr, char * line) {
+int embue_parser(parse_context_t * parse_ctx_ptr, const char * line) {
     int num_fields = 0;
     char * buffer = strdup(line);
     char * probe = buffer;
@@ -102,13 +87,6 @@ int embue_parser(parse_context_t * parse_ctx_ptr, char * line) {
     return 0;
 }
 
-/**
- * @brief A shallow and destructive parser, but very efficient
- * 
- * @param parse_ctx_ptr an embued parse_context pointer
- * @param line null-terminated line containing a record
- * @return int 0 = success, -1 = fields are not in the order expected, -2 expected number of fields did not match the number of fields parsed
- */
 int parse(parse_context_t * parse_ctx_ptr, char * line) {
     char * probe = line;
     int parsed_fields = 0;
@@ -141,28 +119,48 @@ int parse(parse_context_t * parse_ctx_ptr, char * line) {
     return parse_ctx_ptr->num_fields == parsed_fields ? 0 : -2;
 }
 
+int get_number_of_fields(const parse_context_t * parse_ctx_ptr) {
+    return parse_ctx_ptr->num_fields;
+}
+
+int get_field(const parse_context_t * parse_ctx_ptr, field_t * field_ptr, int field_number) {
+    if (field_number >= 0 && field_number < parse_ctx_ptr->num_fields) {
+        field_ptr->key = parse_ctx_ptr->fields[field_number];
+        field_ptr->value = parse_ctx_ptr->values[field_number];
+        return 0;
+    }
+    return -1;
+}
+
+/*****************************************************************************
+ * TESTING
+ ****************************************************************************/
+#include <stdio.h>
+
 /**
- * @brief Emit the parsed record to stdout for debugging
+ * @brief Emit the parsed record to stdout for testing / debugging
  * 
  * @param parse_ctx_ptr a populated parse_context pointer
  */
-void emit_record(parse_context_t * parse_ctx_ptr, FILE * file_ptr) {
+void emit_record(const parse_context_t * parse_ctx_ptr, FILE * file_ptr) {
     int emitted_fields = 0;
-    int num_fields = parse_ctx_ptr->num_fields;
+    field_t field;
 
-    while (emitted_fields < num_fields) {
-        fprintf(file_ptr, "[%d] %s -> %s\n", emitted_fields + 1, parse_ctx_ptr->fields[emitted_fields], parse_ctx_ptr->values[emitted_fields]);
-        ++emitted_fields;
+    if (0 == get_field(parse_ctx_ptr, &field, emitted_fields)) {
+        fprintf(file_ptr, "%s=%s", field.key, field.value);
+        while (0 == get_field(parse_ctx_ptr, &field, ++emitted_fields)) {
+            fprintf(file_ptr, " %s=%s", field.key, field.value);
+        }
     }
     fprintf(file_ptr, "\n");
 }
 
 /**
- * @brief 
+ * @brief Test driver
  * 
- * @param argc 
- * @param argv 
- * @return int 
+ * @param argc count of items in the argument vector
+ * @param argv argument vector
+ * @return int 0 on success (EXIT_SUCCESS), non-zero on failure (EXIT_FAILURE)
  */
 int main(int argc, char * argv[]){
     FILE * fp = stdin;

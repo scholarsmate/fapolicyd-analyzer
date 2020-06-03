@@ -6,73 +6,117 @@
 #include <stdlib.h>
 #include <string.h>
 
+
 /**
  * @brief Opaque structure that holds the parse context
  */
 struct parse_context_struct {
-    int num_fields;
-    char ** fields;
-    char ** values;
+    field_array_t * subject_fields_ptr;
+    field_array_t * object_fields_ptr;
     char * _exemplar;
 };
 
 parse_context_t * construct_parse_context(void) {
     parse_context_t * parse_ctx_ptr = (parse_context_t *)malloc(sizeof(parse_context_t));
     if (parse_ctx_ptr) {
-        parse_ctx_ptr->num_fields = 0;
-        parse_ctx_ptr->fields = NULL;
-        parse_ctx_ptr->values = NULL;
+        parse_ctx_ptr->subject_fields_ptr = construct_field_array();
+        if (!parse_ctx_ptr->subject_fields_ptr) {
+            free(parse_ctx_ptr);
+            return NULL;
+        }
+        parse_ctx_ptr->object_fields_ptr = construct_field_array();
+        if (!parse_ctx_ptr->object_fields_ptr) {
+            destroy_field_array(parse_ctx_ptr->subject_fields_ptr);
+            free(parse_ctx_ptr);
+            return NULL;
+        }
         parse_ctx_ptr->_exemplar = NULL;
     }
     return parse_ctx_ptr;
 }
 
 void destroy_parse_context(parse_context_t * parse_ctx_ptr) {
-    free(parse_ctx_ptr->fields);
-    free(parse_ctx_ptr->values);
+    destroy_field_array(parse_ctx_ptr->subject_fields_ptr);
+    destroy_field_array(parse_ctx_ptr->object_fields_ptr);
     free(parse_ctx_ptr->_exemplar);
     free(parse_ctx_ptr);
 }
 
-int embue_parser(parse_context_t * parse_ctx_ptr, const char * line) {
+bool is_audit_record(const char * line) {
+    return (line[0] == 'r' && line[1] == 'u' && line[2] == 'l' && line[3] == 'e' && line[4] == '=');
+}
+
+inline bool is_rule(const char * line) {
+    if (line[0] == 'a') {
+        return (line[1] == 'l' && line[2] == 'l' && line[3] == 'o' && line[4] == 'w');
+    } else if (line[0] == 'd') {
+        return (line[1] == 'e' && line[2] == 'n' && line[3] == 'y');
+    }
+    return false;
+}
+
+int imbue_parser(parse_context_t * parse_ctx_ptr, const char * line) {
+    static const char dec[] = "dec=";
+    static const size_t dlen = sizeof(dec) - 1;
+    field_array_t * fields_ptr;
     int num_fields = 0;
-    char * buffer = strdup(line);
-    char * probe = buffer;
-    char ** fields;
-    char ** values;
+    char * buffer;
+    char * probe;
+
+    if (is_rule(line)) {
+        size_t llen = strlen(line);
+        size_t slen = llen + dlen;
+        buffer = malloc(slen);
+        if (buffer) {
+            memcpy(buffer, dec, dlen);
+            memcpy(buffer + dlen, line, llen);
+            buffer[slen-1] = '\0';
+        }
+    } else if (is_audit_record(line)) {
+        buffer = strdup(line);
+    } else {
+        return PARSE_ERROR;
+    }
 
     if (!buffer) {
-        return -1;
+        return ALLOCATION_ERROR;
     }
+    probe = buffer;
     while (*probe) {
-        if (*probe == '=') ++num_fields;
+        if (*probe == '=') {
+            ++num_fields;
+        } else if (*probe == ':') {
+            if (!num_fields) {
+               return PARSE_ERROR;
+            }
+            if (initialize_field_array(parse_ctx_ptr->subject_fields_ptr, num_fields) != OK) {
+                return ALLOCATION_ERROR;
+            }
+            num_fields = 0;
+        }
         ++probe;
     }
     if (!num_fields) {
-        return -2;
+        return PARSE_ERROR;
     }
-    if (!(fields = (char**)malloc((num_fields + 1) * sizeof(char *)))) {
-        free(buffer);
-        return -1;
+    if (initialize_field_array(parse_ctx_ptr->object_fields_ptr, num_fields) != OK) {
+       return ALLOCATION_ERROR;
     }
-    if (!(values = (char**)malloc((num_fields + 1) * sizeof(char *)))) {
-        free(buffer);
-        free(fields);
-        return -1;
-    }
-    fields[num_fields] = NULL;
-    values[num_fields] = NULL;
+
     probe = buffer;
     num_fields = 0;
-    fields[num_fields++] = probe;
+    fields_ptr = parse_ctx_ptr->subject_fields_ptr;
+    set_key(fields_ptr, num_fields++, probe);
     while (*probe) {
         if (*probe == ' ') {
             while (*probe == ' ') ++probe;
             if (*probe == ':') {
                 ++probe;
                 while (*probe == ' ') ++probe;
+                num_fields = 0;
+                fields_ptr = parse_ctx_ptr->object_fields_ptr;
             }
-            fields[num_fields++] = probe;
+            set_key(fields_ptr, num_fields++, probe);
             continue;
         } 
         if (*probe == '=') {
@@ -80,58 +124,63 @@ int embue_parser(parse_context_t * parse_ctx_ptr, const char * line) {
         }
         ++probe;
     }
-    parse_ctx_ptr->num_fields = num_fields;
-    parse_ctx_ptr->fields = fields;
-    parse_ctx_ptr->values = values;
     parse_ctx_ptr->_exemplar = buffer;
-    return 0;
+    return OK;
 }
 
 int parse(parse_context_t * parse_ctx_ptr, char * line) {
     char * probe = line;
-    int parsed_fields = 0;
-    char ** fields = parse_ctx_ptr->fields;
-    char ** values = parse_ctx_ptr->values;
+    size_t parsed_fields = 0;
+    field_array_t * fields_ptr = parse_ctx_ptr->subject_fields_ptr;
 
     while (*probe) {
         if (*probe == '=') {
             *probe = '\0';
-            if (0 != strcmp(fields[parsed_fields], line)) {
-                return -1;  // field order does not match embued exemplar
+            if (0 != strcmp(get_key(fields_ptr, parsed_fields), line)) {
+                return PARSE_ERROR;  // field order does not match imbued exemplar
             }
-            values[parsed_fields++] = ++probe;  // the beginning of a new value
+            set_value(fields_ptr, parsed_fields++, ++probe);  // the beginning of a new value
             continue;
         }
         if (*probe == ' ') {
             *probe = '\0';  // terminate the end of the value
             ++probe;
             while (*probe == ' ') ++probe;  // skip additional spaces
-            // Skip a colon
+            // colon switches from subject to object
             if (*probe == ':') {
                 ++probe;
                 while (*probe == ' ') ++probe;  // skip additional spaces after the colon
+                if (parsed_fields != get_number_of_subject_fields(parse_ctx_ptr)) {
+                    return PARSE_ERROR;
+                }
+                parsed_fields = 0;
+                fields_ptr = parse_ctx_ptr->object_fields_ptr;
             }
             line = probe;  // the beginning of a new field
         }
         ++probe;
     }
     if (*(--probe) == '\n') *probe ='\0';  // gobble up trailing newlines
-    return parse_ctx_ptr->num_fields == parsed_fields ? 0 : -2;
+    return get_number_of_object_fields(parse_ctx_ptr) == parsed_fields ? OK : PARSE_ERROR;
 }
 
-int get_number_of_fields(const parse_context_t * parse_ctx_ptr) {
-    return parse_ctx_ptr->num_fields;
+size_t get_number_of_subject_fields(const parse_context_t * parse_ctx_ptr) {
+    return get_num_fields(parse_ctx_ptr->subject_fields_ptr);
 }
 
-int get_field(const parse_context_t * parse_ctx_ptr, field_t * field_ptr, int field_number) {
-    if (field_number >= 0 && field_number < parse_ctx_ptr->num_fields) {
-        field_ptr->key = parse_ctx_ptr->fields[field_number];
-        field_ptr->value = parse_ctx_ptr->values[field_number];
-        return 0;
-    }
-    return -1;
+size_t get_number_of_object_fields(const parse_context_t * parse_ctx_ptr) {
+    return get_num_fields(parse_ctx_ptr->object_fields_ptr);
 }
 
+int get_subject_field(const parse_context_t * parse_ctx_ptr, field_t * field_ptr, size_t field_number) {
+    return get_field(parse_ctx_ptr->subject_fields_ptr, field_ptr, field_number);
+}
+
+int get_object_field(const parse_context_t * parse_ctx_ptr, field_t * field_ptr, size_t field_number) {
+    return get_field(parse_ctx_ptr->object_fields_ptr, field_ptr, field_number);
+}
+
+#ifdef PARSE_TEST
 /*****************************************************************************
  * TESTING
  ****************************************************************************/
@@ -146,9 +195,17 @@ void emit_record(const parse_context_t * parse_ctx_ptr, FILE * file_ptr) {
     int emitted_fields = 0;
     field_t field;
 
-    if (0 == get_field(parse_ctx_ptr, &field, emitted_fields)) {
+    if (OK == get_subject_field(parse_ctx_ptr, &field, emitted_fields)) {
         fprintf(file_ptr, "%s=%s", field.key, field.value);
-        while (0 == get_field(parse_ctx_ptr, &field, ++emitted_fields)) {
+        while (OK == get_subject_field(parse_ctx_ptr, &field, ++emitted_fields)) {
+            fprintf(file_ptr, " %s=%s", field.key, field.value);
+        }
+    }
+    fprintf(file_ptr, " : ");
+    emitted_fields = 0;
+    if (OK == get_object_field(parse_ctx_ptr, &field, emitted_fields)) {
+        fprintf(file_ptr, "%s=%s", field.key, field.value);
+        while (OK == get_object_field(parse_ctx_ptr, &field, ++emitted_fields)) {
             fprintf(file_ptr, " %s=%s", field.key, field.value);
         }
     }
@@ -177,20 +234,28 @@ int main(int argc, char * argv[]){
         fprintf(stderr, "Illegal usage\n");
         exit(EXIT_FAILURE);
     }
-    if ((read = getline(&line, &len, fp)) < 0) {
+    while ((read = getline(&line, &len, fp)) > 0) {
+        if (is_audit_record(line)) {
+            break;
+        }
+    }
+    if (read < 0) {
         exit(EXIT_FAILURE);
     }
     if(!(parse_ctx_ptr = construct_parse_context())) {
         exit(EXIT_FAILURE);
     }
-    if (embue_parser(parse_ctx_ptr, line) != 0) {
+    if (imbue_parser(parse_ctx_ptr, line) != OK) {
         exit(EXIT_FAILURE);
     }
     do {
-        if (parse(parse_ctx_ptr, line) !=0) {
-            exit(EXIT_FAILURE);
+        //printf("len: %ld\n", read);
+        if (is_audit_record(line)) {
+            if (parse(parse_ctx_ptr, line) != OK) {
+                exit(EXIT_FAILURE);
+            }
+            emit_record(parse_ctx_ptr, stdout);
         }
-        emit_record(parse_ctx_ptr, stdout);
     } while ((read = getline(&line, &len, fp)) > 0);
 
     fclose(fp);
@@ -198,3 +263,4 @@ int main(int argc, char * argv[]){
     destroy_parse_context(parse_ctx_ptr);
     exit(EXIT_SUCCESS);
 }
+#endif

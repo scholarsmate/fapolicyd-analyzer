@@ -1,5 +1,3 @@
-bin_PROGRAMS = main		
-main_SOURCES = main.c
-main_CFLAGS = @SQLITE3_CFLAGS@
-main_LDFLAGS = @SQLITE3_LIBS@
-
+bin_PROGRAMS = fa
+fa_LDADD = -lgcrypt
+fa_SOURCES = lib/util/hash.c lib/util/hash_set.c lib/util/fields.c lib/util/parse.c main.c

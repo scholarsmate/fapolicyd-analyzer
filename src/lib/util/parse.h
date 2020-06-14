@@ -5,7 +5,7 @@
 #ifndef PARSE_H
 #define PARSE_H
 
-#include <fields.h>
+#include <lib/util/fields.h>
 #include <stdbool.h>
 
 typedef struct parse_context_struct parse_context_t;

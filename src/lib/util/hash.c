@@ -7,7 +7,8 @@
 #include <fcntl.h>
 #include <unistd.h>
 #include <gcrypt.h>
-#include <error_codes.h>
+#include "hash.h"
+#include "error_codes.h"
 
 static int to_hex(char * hash_buf, size_t hash_buf_len, const unsigned char * digest, size_t digest_len) {
     size_t i;
@@ -41,15 +42,3 @@ int sha256_file(char * hash_buf, size_t hash_buf_len, const char * path) {
     gcry_md_close(hd);
     return rc;
 }
-
-#define HASH_TEST
-#ifdef HASH_TEST
-int main(void)
-{
-    char hash[80];
-    sha256_file(hash, sizeof(hash), "/etc/passwd");
-    printf("hash: %s\n", hash);
-    return 0;
-}
-
-#endif

@@ -1,8 +1,9 @@
-#include "hash_set.h"
 #include <inttypes.h>
 #include <stdlib.h>
 #include <string.h>
 #include <stdbool.h>
+#include "hash_set.h"
+#include "error_codes.h"
 
 /*****************************************************************************
  * Private

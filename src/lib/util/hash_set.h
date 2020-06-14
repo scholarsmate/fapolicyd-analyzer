@@ -5,7 +5,6 @@
 #ifndef HASH_SET_H
 #define HASH_SET_H
 
-#include <error_codes.h>
 #include <stddef.h>
 
 typedef struct hash_set_struct hash_set_t;

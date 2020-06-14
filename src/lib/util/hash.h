@@ -5,6 +5,8 @@
 #ifndef HASH_H
 #define HASH_H
 
+#include <stddef.h>
+
 /**
  * @brief Computes a SHA256 hash of the contents of the file pointed to by the given path
  * 

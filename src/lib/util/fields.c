@@ -1,4 +1,5 @@
 #include "fields.h"
+#include "error_codes.h"
 #include <stdlib.h>
 
 
@@ -65,4 +66,13 @@ char * get_key(field_array_t * field_array_ptr, size_t field_number) {
 
 char * get_value(field_array_t * field_array_ptr, size_t field_number) {
     return field_array_ptr->values[field_number];
+}
+
+int get_field(field_array_t * field_array_ptr, field_t * field_ptr, size_t field_number) {
+    if (field_number < get_num_fields(field_array_ptr)) {
+        field_ptr->key = get_key(field_array_ptr, field_number);
+        field_ptr->value = get_value(field_array_ptr, field_number);
+        return OK;
+    }
+    return RANGE_ERROR;
 }

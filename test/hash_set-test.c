@@ -2,7 +2,7 @@
  * TESTING
  ****************************************************************************/
 
-#include <hash_set.h>
+#include <lib/util/hash_set.h>
 #include <stdio.h>
 
 int main(int argc, char** argv) {

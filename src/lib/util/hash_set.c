@@ -1,7 +1,6 @@
 #include <inttypes.h>
 #include <stdlib.h>
 #include <string.h>
-#include <stdbool.h>
 #include "hash_set.h"
 #include "error_codes.h"
 
@@ -84,7 +83,6 @@ static int _rehash_set(hash_set_t * set) {
     size_t index;
     size_t i;
     int rc;
-
     for (i = 0; i < set->number_nodes; ++i) {
         if(set->nodes[i]) {
             if (!_get_index(set, set->nodes[i]->key, set->nodes[i]->hash, &index)) {
@@ -93,7 +91,7 @@ static int _rehash_set(hash_set_t * set) {
                 abort();
             }
             if (i != index) { // we are moving this node
-                if ((rc = _assign_node(set, set->nodes[i]->key, set->nodes[i]->hash, index)) != OK) {
+                if (OK != (rc = _assign_node(set, set->nodes[i]->key, set->nodes[i]->hash, index))) {
                     return rc;
                 }
                 _free_index(set, i);
@@ -105,11 +103,9 @@ static int _rehash_set(hash_set_t * set) {
 
 static int _set_add(hash_set_t * set, const char * key, uint64_t hash) {
     size_t index;
-
     if (_get_index(set, key, hash, &index)) {
         return OK;
     }
-
     // Expand nodes if we are close to our desired fullness
     if ((float)set->used_nodes / set->number_nodes > HASH_SET_LOAD_FACTOR) {
         size_t i;
@@ -127,7 +123,6 @@ static int _set_add(hash_set_t * set, const char * key, uint64_t hash) {
         // rehash all nodes
         _rehash_set(set);
     }
-
     _assign_node(set, key, hash, index);
     ++set->used_nodes;
     return OK;
@@ -155,7 +150,6 @@ int hash_set_initialize(hash_set_t * set, size_t num_nodes) {
 
 void hash_set_clear(hash_set_t * set) {
     size_t i;
-
     for(i = 0; i < set->number_nodes; ++i) {
         if (set->nodes[i] != NULL) {
             _free_index(set, i);
@@ -174,10 +168,23 @@ int hash_set_add(hash_set_t * set, const char * key) {
     return _set_add(set, key, _hash(key));
 }
 
-int hash_set_coontains(const hash_set_t * set, const char * key) {
+bool hash_set_contains(const hash_set_t * set, const char * key) {
     size_t index;
-
     return _get_index(set, key, _hash(key), &index);
+}
+
+bool hash_set_remove(hash_set_t * set, const char * key) {
+    size_t index;
+    uint64_t hash = _hash(key);
+
+    if(!_get_index(set, key, hash, &index)) {
+        return false;
+    }
+
+    // remove this node
+    _free_index(set, index);
+    --set->used_nodes;
+    return true;
 }
 
 size_t hash_set_count(const hash_set_t * set) {

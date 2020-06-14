@@ -1,9 +1,11 @@
-bin_PROGRAMS = hash_test hash_set_test match_test parse_test
+bin_PROGRAMS = hash_test hash_set_test hash_table_test match_test parse_test
 hash_test_LDADD = -lgcrypt
 hash_test_CFLAGS = -I ../src
 hash_test_SOURCES = ../src/lib/util/hash.c hash-test.c
 hash_set_test_CFLAGS = -I ../src
 hash_set_test_SOURCES = ../src/lib/util/hash_set.c hash_set-test.c
+hash_table_test_CFLAGS = -I ../src
+hash_table_test_SOURCES = ../src/lib/util/hash_table.c hash_table-test.c
 match_test_CFLAGS = -I ../src
 match_test_SOURCES = ../src/lib/util/match.c match-test.c
 parse_test_CFLAGS = -I ../src

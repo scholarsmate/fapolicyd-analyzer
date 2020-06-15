@@ -8,6 +8,7 @@ LT_INIT
 AM_INIT_AUTOMAKE([subdir-objects])
 AC_CONFIG_SRCDIR([src/main.c])
 AC_CONFIG_HEADERS([config.h])
+AM_PROG_CC_C_O
 
 # Checks for programs.
 AC_PROG_CXX

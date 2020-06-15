@@ -5,7 +5,7 @@ AC_PREREQ([2.69])
 AC_CONFIG_MACRO_DIR([m4])
 AC_INIT([fapolicyd-analyzer], [0.1], bugs@ctc.com)
 LT_INIT
-AM_INIT_AUTOMAKE
+AM_INIT_AUTOMAKE([subdir-objects])
 AC_CONFIG_SRCDIR([src/main.c])
 AC_CONFIG_HEADERS([config.h])
 
@@ -20,7 +20,6 @@ AC_PROG_MAKE_SET
 AC_PROG_RANLIB
 
 # Checks for libraries.
-AC_CHECK_LIB([gcrypt], [gcry_md_test_algo])
 
 # Checks for header files.
 AC_CHECK_HEADERS([fcntl.h inttypes.h stddef.h stdlib.h string.h unistd.h])
@@ -36,7 +35,7 @@ AC_TYPE_UINT64_T
 # Checks for library functions.
 AC_FUNC_MALLOC
 AC_FUNC_REALLOC
-AC_CHECK_FUNCS([strdup])
+AC_CHECK_FUNCS([strdup memset])
 
 AC_CONFIG_FILES([Makefile
                  test/Makefile

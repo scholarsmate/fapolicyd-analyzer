@@ -8,7 +8,6 @@ LT_INIT
 AM_INIT_AUTOMAKE([subdir-objects])
 AC_CONFIG_SRCDIR([src/main.c])
 AC_CONFIG_HEADERS([config.h])
-AM_PROG_CC_C_O
 
 # Checks for programs.
 AC_PROG_CXX
@@ -21,6 +20,7 @@ AC_PROG_MAKE_SET
 AC_PROG_RANLIB
 
 # Checks for libraries.
+AM_PROG_CC_C_O
 
 # Checks for header files.
 AC_CHECK_HEADERS([fcntl.h inttypes.h stddef.h stdlib.h string.h unistd.h])

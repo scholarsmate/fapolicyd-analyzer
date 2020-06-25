@@ -1,7 +1,10 @@
-bin_PROGRAMS = sha256_test hash_set_test hash_table_test match_test parse_test
+bin_PROGRAMS = sha256_test array_list_test hash_set_test hash_table_test match_test parse_test
 
 sha256_test_CFLAGS = -I ../src
 sha256_test_SOURCES = ../src/lib/util/sha256.c sha256-test.c
+
+array_list_test_CFLAGS = -I ../src
+array_list_test_SOURCES = ../src/lib/util/array_list.c array_list-test.c
 
 hash_set_test_CFLAGS = -I ../src
 hash_set_test_SOURCES = ../src/lib/util/hash_set.c hash_set-test.c

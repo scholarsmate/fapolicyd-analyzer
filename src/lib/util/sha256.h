@@ -1,13 +1,13 @@
 #ifndef SHA256_H
 #define SHA256_H
 
-#include <stddef.h>
-
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-#define SHA256_DIGEST_SIZE 32 // SHA256 outputs a 32 byte digest
+#include <stddef.h>
+
+#define SHA256_DIGEST_SIZE 32 /* SHA256 outputs a 32 byte digest */
 
 typedef struct sha256_ctx_struct sha256_ctx_t;
 
@@ -35,4 +35,4 @@ int sha256_file(char *hash_buf, size_t hash_buf_len, const char *path);
 }
 #endif
 
-#endif // SHA256_H
+#endif /* SHA256_H */

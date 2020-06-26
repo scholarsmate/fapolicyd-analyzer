@@ -36,7 +36,7 @@ AC_TYPE_UINT64_T
 # Checks for library functions.
 AC_FUNC_MALLOC
 AC_FUNC_REALLOC
-AC_CHECK_FUNCS([strdup memset])
+AC_CHECK_FUNCS([strdup strchr memset])
 
 AC_CONFIG_FILES([Makefile
                  test/Makefile

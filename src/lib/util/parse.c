@@ -20,14 +20,14 @@ parse_context_t *construct_parse_context(void) {
   parse_context_t *parse_ctx_ptr =
       (parse_context_t *)malloc(sizeof(parse_context_t));
   if (parse_ctx_ptr) {
-    parse_ctx_ptr->subject_fields_ptr = construct_field_array();
+    parse_ctx_ptr->subject_fields_ptr = field_array_construct();
     if (!parse_ctx_ptr->subject_fields_ptr) {
       free(parse_ctx_ptr);
       return NULL;
     }
-    parse_ctx_ptr->object_fields_ptr = construct_field_array();
+    parse_ctx_ptr->object_fields_ptr = field_array_construct();
     if (!parse_ctx_ptr->object_fields_ptr) {
-      destroy_field_array(parse_ctx_ptr->subject_fields_ptr);
+      field_array_destroy(parse_ctx_ptr->subject_fields_ptr);
       free(parse_ctx_ptr);
       return NULL;
     }
@@ -37,8 +37,8 @@ parse_context_t *construct_parse_context(void) {
 }
 
 void destroy_parse_context(parse_context_t *parse_ctx_ptr) {
-  destroy_field_array(parse_ctx_ptr->subject_fields_ptr);
-  destroy_field_array(parse_ctx_ptr->object_fields_ptr);
+  field_array_destroy(parse_ctx_ptr->subject_fields_ptr);
+  field_array_destroy(parse_ctx_ptr->object_fields_ptr);
   free(parse_ctx_ptr->_exemplar);
   free(parse_ctx_ptr);
 }
@@ -92,8 +92,7 @@ int imbue_parser(parse_context_t *parse_ctx_ptr, const char *line) {
       if (!num_fields) {
         return PARSE_ERROR;
       }
-      if (initialize_field_array(parse_ctx_ptr->subject_fields_ptr,
-                                 num_fields) != OK) {
+      if (field_array_initialize(parse_ctx_ptr->subject_fields_ptr, num_fields) != OK) {
         return ALLOCATION_ERROR;
       }
       num_fields = 0;
@@ -103,15 +102,14 @@ int imbue_parser(parse_context_t *parse_ctx_ptr, const char *line) {
   if (!num_fields) {
     return PARSE_ERROR;
   }
-  if (initialize_field_array(parse_ctx_ptr->object_fields_ptr, num_fields) !=
-      OK) {
+  if (field_array_initialize(parse_ctx_ptr->object_fields_ptr, num_fields) != OK) {
     return ALLOCATION_ERROR;
   }
 
   probe = buffer;
   num_fields = 0;
   fields_ptr = parse_ctx_ptr->subject_fields_ptr;
-  set_key(fields_ptr, num_fields++, probe);
+  field_array_set_key(fields_ptr, num_fields++, probe);
   while (*probe) {
     if (*probe == ' ') {
       while (*probe == ' ')
@@ -123,7 +121,7 @@ int imbue_parser(parse_context_t *parse_ctx_ptr, const char *line) {
         num_fields = 0;
         fields_ptr = parse_ctx_ptr->object_fields_ptr;
       }
-      set_key(fields_ptr, num_fields++, probe);
+      field_array_set_key(fields_ptr, num_fields++, probe);
       continue;
     }
     if (*probe == '=') {
@@ -143,11 +141,10 @@ int parse(parse_context_t *parse_ctx_ptr, char *line) {
   while (*probe) {
     if (*probe == '=') {
       *probe = '\0';
-      if (0 != strcmp(get_key(fields_ptr, parsed_fields), line)) {
+      if (0 != strcmp(field_array_get_key(fields_ptr, parsed_fields), line)) {
         return PARSE_ERROR; // field order does not match imbued exemplar
       }
-      set_value(fields_ptr, parsed_fields++,
-                ++probe); // the beginning of a new value
+      field_array_set_value(fields_ptr, parsed_fields++, ++probe); // the beginning of a new value
       continue;
     }
     if (*probe == ' ') {
@@ -178,19 +175,19 @@ int parse(parse_context_t *parse_ctx_ptr, char *line) {
 }
 
 size_t get_number_of_subject_fields(const parse_context_t *parse_ctx_ptr) {
-  return get_num_fields(parse_ctx_ptr->subject_fields_ptr);
+  return field_array_get_num_fields(parse_ctx_ptr->subject_fields_ptr);
 }
 
 size_t get_number_of_object_fields(const parse_context_t *parse_ctx_ptr) {
-  return get_num_fields(parse_ctx_ptr->object_fields_ptr);
+  return field_array_get_num_fields(parse_ctx_ptr->object_fields_ptr);
 }
 
 int get_subject_field(const parse_context_t *parse_ctx_ptr, field_t *field_ptr,
                       size_t field_number) {
-  return get_field(parse_ctx_ptr->subject_fields_ptr, field_ptr, field_number);
+  return field_array_get_field(parse_ctx_ptr->subject_fields_ptr, field_ptr, field_number);
 }
 
 int get_object_field(const parse_context_t *parse_ctx_ptr, field_t *field_ptr,
                      size_t field_number) {
-  return get_field(parse_ctx_ptr->object_fields_ptr, field_ptr, field_number);
+  return field_array_get_field(parse_ctx_ptr->object_fields_ptr, field_ptr, field_number);
 }

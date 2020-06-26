@@ -9,9 +9,12 @@
 extern "C" {
 #endif
 
-#include <lib/util/array_list.h>
+#include <lib/util/table.h>
 
-int get_system_packages(array_list_t *list);
+typedef int(*package_progress_callback_t)(void *, size_t, size_t);
+
+table_t *package_get_rpm_info(void);
+table_t *package_get_rpm_files_info(const table_t *rpm_table_ptr, package_progress_callback_t progress_callback, void * progress_client_ptr);
 
 #ifdef __cplusplus
 }

@@ -9,7 +9,7 @@
 extern "C" {
 #endif
 
-#include <lib/util/fields.h>
+#include <lib/util/field_array.h>
 #include <stdbool.h>
 
 typedef struct parse_context_struct parse_context_t;

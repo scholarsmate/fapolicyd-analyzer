@@ -3,6 +3,7 @@
 #include <inttypes.h>
 #include <stdlib.h>
 #include <string.h>
+#include <stdio.h>
 
 /*****************************************************************************
  * Private
@@ -45,8 +46,7 @@ static void _free_index(hash_table_t *table, size_t index) {
   table->nodes[index] = NULL;
 }
 
-static bool _get_index(const hash_table_t *table, const char *key,
-                       uint64_t hash, size_t *index) {
+static bool _get_index(const hash_table_t *table, const char *key, uint64_t hash, size_t *index) {
   size_t idx = hash % table->number_nodes;
   size_t i = idx;
   while (1) {
@@ -54,8 +54,7 @@ static bool _get_index(const hash_table_t *table, const char *key,
       *index = i;
       return false; // not here OR first open slot
     }
-    if (hash == table->nodes[i]->hash &&
-        0 == strcmp(key, table->nodes[i]->key)) {
+    if (hash == table->nodes[i]->hash && 0 == strcmp(key, table->nodes[i]->key)) {
       *index = i;
       return true;
     }
@@ -89,16 +88,14 @@ static int _rehash_table(hash_table_t *table) {
   int rc;
   for (i = 0; i < table->number_nodes; ++i) {
     if (table->nodes[i]) {
-      if (!_get_index(table, table->nodes[i]->key, table->nodes[i]->hash,
-                      &index)) {
+      if (!_get_index(table, table->nodes[i]->key, table->nodes[i]->hash, &index)) {
         // nodes already in the hash table must have indexes
         // this is a logic error that should never happen
+        fprintf(stderr, "*** '%s' not found\n", table->nodes[i]->key);
         abort();
       }
       if (i != index) { // we are moving this node
-        if (OK != (rc = _assign_node(table, table->nodes[i]->key,
-                                     table->nodes[i]->value,
-                                     table->nodes[i]->hash, index))) {
+        if (OK != (rc = _assign_node(table, table->nodes[i]->key, table->nodes[i]->value, table->nodes[i]->hash, index))) {
           return rc;
         }
         _free_index(table, i);

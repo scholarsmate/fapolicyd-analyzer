@@ -96,12 +96,33 @@ const char *table_get_value(const table_t *table_ptr, size_t col_num,
   return *(const char **)utarray_eltptr(table_ptr->columns[col_num], row_num);
 }
 
-int table_append(table_t *table_ptr, const char **row) {
+int table_append_row(table_t *table_ptr, const char **row) {
   size_t i;
   const size_t column_count = table_get_column_count(table_ptr);
   for (i = 0; i < column_count; ++i) {
     utarray_push_back(table_ptr->columns[i], &row[i]);
   }
+  return OK;
+}
+
+int table_append_column(table_t *table_ptr, const char *column_name,
+                        const char **column) {
+  size_t i = 0;
+  const size_t row_count = table_get_row_count(table_ptr);
+  UT_array *new_col = NULL;
+
+  utarray_new(new_col, &ut_str_icd);
+  utarray_reserve(new_col, row_count);
+  for(i = 0; i < row_count; ++i) {
+    utarray_push_back(new_col, &column[i]);
+  }
+
+  size_t column_count = ++table_ptr->column_count;
+  CHECK_PTR(table_ptr->column_names = realloc(table_ptr->column_names, column_count * sizeof(const char *)));
+  CHECK_PTR(table_ptr->columns = realloc(table_ptr->columns, column_count * sizeof(UT_array)));
+  CHECK_PTR(table_ptr->column_names[column_count - 1] = strdup(column_name));
+  table_ptr->columns[column_count - 1] = new_col;
+
   return OK;
 }
 

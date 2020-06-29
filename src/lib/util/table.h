@@ -26,12 +26,14 @@ int table_find_column_number(const table_t *table_ptr, const char *col_name,
 const char *table_get_value(const table_t *table_ptr, size_t col_num,
                             size_t row_num);
 
-int table_append(table_t *table_ptr, const char **row);
+int table_append_row(table_t *table_ptr, const char **row);
+int table_append_column(table_t *table_ptr, const char *column_name,
+                        const char **column);
 
-/*****************************************************************************
- * Table Index
- ****************************************************************************/
-typedef struct table_index_struct table_index_t;
+    /*****************************************************************************
+     * Table Index
+     ****************************************************************************/
+    typedef struct table_index_struct table_index_t;
 typedef struct row_index_struct row_index_t;
 
 table_index_t *table_index_create(const table_t *table_ptr, size_t col_num);

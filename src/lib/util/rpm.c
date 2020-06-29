@@ -49,7 +49,7 @@ table_t *package_get_rpm_info(void) {
         cptr = probe + 1;
       }
       record[col_num] = cptr;
-      table_append(table_ptr, (const char **)record);
+      table_append_row(table_ptr, (const char **)record);
     }
     free(line);
     pclose(fp);
@@ -113,7 +113,7 @@ package_get_rpm_files_info(const table_t *rpm_table_ptr,
         cptr = probe + 1;
       }
       record[col_num] = cptr;
-      table_append(table_ptr, (const char **)record);
+      table_append_row(table_ptr, (const char **)record);
     }
     pclose(fp);
     if (progress_callback && 0 != progress_callback(progress_client_ptr, row_count, i + 1)) {
@@ -164,7 +164,7 @@ table_t *package_hash_files(const table_t *rpm_files_info_table_ptr,
     if (S_ISREG(st.st_mode) && 0 < st.st_size &&
         OK == sha256_file(hash, sizeof(hash), file_path)) {
       snprintf(buf, sizeof(buf) - 1, "%lld", st.st_size);
-      table_append(table_ptr, (const char **)record);
+      table_append_row(table_ptr, (const char **)record);
     }
     if (progress_callback && 0 != progress_callback(progress_client_ptr, row_count, i + 1)) {
       break;

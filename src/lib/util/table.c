@@ -1,11 +1,10 @@
 #include "table.h"
+#include "detail/macros.h"
 #include "detail/utarray.h"
 #include "detail/uthash.h"
-#include "detail/macros.h"
 #include "error_codes.h"
 #include <stdlib.h>
 #include <string.h>
-
 
 /*****************************************************************************
  * Table
@@ -76,6 +75,20 @@ size_t table_get_row_count(const table_t *table_ptr) {
 
 const char *table_get_column_name(const table_t *table_ptr, size_t col_num) {
   return table_ptr->column_names[col_num];
+}
+
+int table_find_column_number(const table_t *table_ptr, const char *col_name,
+                             size_t *col_num_ptr) {
+  const size_t column_count = table_get_column_count(table_ptr);
+  size_t i = 0;
+
+  for (i = 0; i < column_count; ++i) {
+    if (0 == strcmp(col_name, table_get_column_name(table_ptr, i))) {
+      *col_num_ptr = i;
+      return OK;
+    }
+  }
+  return NOT_FOUND;
 }
 
 const char *table_get_value(const table_t *table_ptr, size_t col_num,

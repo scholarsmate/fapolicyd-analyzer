@@ -36,6 +36,7 @@ void print_table(const table_t * table_ptr, FILE * fp) {
 int main(int argc, char **argv) {
   table_t *rpm_table_ptr = NULL;
   table_t *rpm_file_table_ptr = NULL;
+  table_t *disk_file_table_ptr = NULL;
 
   rpm_table_ptr = package_get_rpm_info();
   print_table(rpm_table_ptr, stdout);
@@ -45,6 +46,11 @@ int main(int argc, char **argv) {
   print_table(rpm_file_table_ptr, stdout);
   printf("\n--------\n");
 
+  disk_file_table_ptr = package_hash_files(rpm_file_table_ptr,  emit_progress, stdout);
+  print_table(disk_file_table_ptr, stdout);
+  printf("\n--------\n");
+
+  table_destroy(disk_file_table_ptr);
   table_destroy(rpm_file_table_ptr);
   table_destroy(rpm_table_ptr);
 

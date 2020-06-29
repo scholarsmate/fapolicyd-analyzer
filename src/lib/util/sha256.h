@@ -6,6 +6,7 @@ extern "C" {
 #endif
 
 #include <stddef.h>
+#include <unistd.h>
 
 #define SHA256_DIGEST_SIZE 32 /* SHA256 outputs a 32 byte digest */
 
@@ -14,7 +15,7 @@ typedef struct sha256_ctx_struct sha256_ctx_t;
 sha256_ctx_t *sha256_create();
 void sha256_destroy(sha256_ctx_t *ctx);
 
-void sha256_update(sha256_ctx_t *ctx, const unsigned char *data, size_t len);
+void sha256_update(sha256_ctx_t *ctx, const unsigned char *data, ssize_t len);
 void sha256_final(
     sha256_ctx_t *ctx,
     unsigned char *digest); /* digest must be at least 32-bytes in length */

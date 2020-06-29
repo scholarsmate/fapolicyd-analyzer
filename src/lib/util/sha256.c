@@ -5,7 +5,6 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <sys/stat.h>
-#include <unistd.h>
 
 #define ROTLEFT(a, b) (((a) << (b)) | ((a) >> (32 - (b))))
 #define ROTRIGHT(a, b) (((a) >> (b)) | ((a) << (32 - (b))))
@@ -111,8 +110,8 @@ sha256_ctx_t *sha256_create(void) {
 
 void sha256_destroy(sha256_ctx_t *ctx) { free(ctx); }
 
-void sha256_update(sha256_ctx_t *ctx, const unsigned char *data, size_t len) {
-  unsigned int i;
+void sha256_update(sha256_ctx_t *ctx, const unsigned char *data, ssize_t len) {
+  ssize_t i;
   for (i = 0; i < len; ++i) {
     ctx->data[ctx->datalen] = data[i];
     ctx->datalen++;
@@ -168,7 +167,7 @@ void sha256_final(sha256_ctx_t *ctx, unsigned char *digest) {
 
 int sha256_file(char *hash_buf, size_t hash_buf_len, const char *path) {
   unsigned char buf[1024 * 4]; /* 4K reads */
-  size_t sz;
+  ssize_t sz;
   int rc;
   int fd = open(path, O_RDONLY);
   char unsigned digest[SHA256_DIGEST_SIZE];

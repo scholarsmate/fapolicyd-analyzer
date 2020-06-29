@@ -16,7 +16,7 @@ match_test_CFLAGS = -I ../src
 match_test_SOURCES = ../src/lib/util/match.c match-test.c
 
 rpm_test_CFLAGS = -I ../src
-rpm_test_SOURCES = ../src/lib/util/rpm.c ../src/lib/util/table.c rpm-test.c
+rpm_test_SOURCES = ../src/lib/util/rpm.c ../src/lib/util/table.c ../src/lib/util/sha256.c rpm-test.c
 
 parse_test_CFLAGS = -I ../src
 parse_test_SOURCES = ../src/lib/util/parse.c ../src/lib/util/field_array.c parse-test.c

@@ -1,10 +1,11 @@
 #include "rpm.h"
-#include "error_codes.h"
 #include "detail/macros.h"
+#include "error_codes.h"
+#include <lib/util/sha256.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-
+#include <sys/stat.h>
 
 table_t *package_get_rpm_info(void) {
   static const char *command =
@@ -56,10 +57,12 @@ table_t *package_get_rpm_info(void) {
   return table_ptr;
 }
 
-table_t *package_get_rpm_files_info(const table_t *rpm_table_ptr, package_progress_callback_t progress_callback, void * progress_client_ptr) {
-  // TODO: Discover this
+table_t *
+package_get_rpm_files_info(const table_t *rpm_table_ptr,
+                           package_progress_callback_t progress_callback,
+                           void *progress_client_ptr) {
   size_t nvra_col_num = 0;
-  size_t row_count = table_get_row_count(rpm_table_ptr);
+  const size_t row_count = table_get_row_count(rpm_table_ptr);
   size_t i = 0;
   const char *command_pfx = "/usr/bin/rpm -ql --dump ";
   table_t *table_ptr = NULL;
@@ -71,14 +74,17 @@ table_t *package_get_rpm_files_info(const table_t *rpm_table_ptr, package_progre
   size_t col_num = 0;
 
   static const char *column_names[] = {
-      "NVRA",    "File Path",   "Size",       "Field_3",
-      "SHA-256", "Permissions", "Owner User", "Owner Group",
-      "Field_8", "Field_9",     "Field_10",   "Field_11"};
+      "NVRA", "Path",  "Size",    "Field_3", "SHA256",   "Permissions",
+      "User", "Group", "Field_8", "Field_9", "Field_10", "Field_11"};
   static const size_t column_count = sizeof(column_names) / sizeof(char *);
   const char *record[column_count];
 
   CHECK_PTR(table_ptr = table_construct());
   table_initialize(table_ptr, column_names, column_count);
+
+  if (OK != table_find_column_number(rpm_table_ptr, "NVRA", &nvra_col_num)) {
+    abort();
+  };
 
   for (i = 0; i < row_count; ++i) {
     char const *nvra = table_get_value(rpm_table_ptr, nvra_col_num, i);
@@ -110,10 +116,59 @@ table_t *package_get_rpm_files_info(const table_t *rpm_table_ptr, package_progre
       table_append(table_ptr, (const char **)record);
     }
     pclose(fp);
-    if (0 != progress_callback(progress_client_ptr, row_count, i + 1)) {
+    if (progress_callback && 0 != progress_callback(progress_client_ptr, row_count, i + 1)) {
       break;
     }
   }
   free(line);
+  return table_ptr;
+}
+
+/* Needs to be run as root to read much of the system files */
+table_t *package_hash_files(const table_t *rpm_files_info_table_ptr,
+                            package_progress_callback_t progress_callback,
+                            void *progress_client_ptr) {
+  const size_t row_count = table_get_row_count(rpm_files_info_table_ptr);
+  size_t file_path_col_num = 0;
+  size_t nvra_col_num = 0;
+  size_t i = 0;
+  char hash[80];
+  char buf[80];
+  static const char *column_names[] = {"NVRA", "Path", "Size", "SHA256"};
+  static const size_t column_count =
+      sizeof(column_names) / sizeof(const char *);
+  const char *record[column_count];
+  table_t *table_ptr = NULL;
+
+  if (OK != table_find_column_number(rpm_files_info_table_ptr, "Path",
+                                     &file_path_col_num)) {
+    abort();
+  };
+  if (OK != table_find_column_number(rpm_files_info_table_ptr, "NVRA",
+                                     &nvra_col_num)) {
+    abort();
+  };
+  CHECK_PTR(table_ptr = table_construct());
+  table_initialize(table_ptr, column_names, column_count);
+
+  record[2] = buf;
+  record[3] = hash;
+  for (i = 0; i < row_count; ++i) {
+    record[0] = table_get_value(rpm_files_info_table_ptr, nvra_col_num, i);
+    const char *file_path = record[1] =
+        table_get_value(rpm_files_info_table_ptr, file_path_col_num, i);
+    struct stat st;
+    if (0 != access(file_path, R_OK) || 0 != stat(file_path, &st)) {
+      continue;
+    }
+    if (S_ISREG(st.st_mode) && 0 < st.st_size &&
+        OK == sha256_file(hash, sizeof(hash), file_path)) {
+      snprintf(buf, sizeof(buf) - 1, "%lld", st.st_size);
+      table_append(table_ptr, (const char **)record);
+    }
+    if (progress_callback && 0 != progress_callback(progress_client_ptr, row_count, i + 1)) {
+      break;
+    }
+  }
   return table_ptr;
 }

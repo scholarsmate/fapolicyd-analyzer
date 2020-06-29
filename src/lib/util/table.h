@@ -21,6 +21,8 @@ int table_initialize(table_t *table_ptr, const char **column_names,
 size_t table_get_column_count(const table_t *table_ptr);
 size_t table_get_row_count(const table_t *table_ptr);
 const char *table_get_column_name(const table_t *table_ptr, size_t col_num);
+int table_find_column_number(const table_t *table_ptr, const char *col_name,
+                             size_t *col_num_ptr);
 const char *table_get_value(const table_t *table_ptr, size_t col_num,
                             size_t row_num);
 

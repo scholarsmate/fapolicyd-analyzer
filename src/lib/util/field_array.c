@@ -24,8 +24,7 @@ int field_array_initialize(field_array_t *field_array_ptr, size_t num_fields) {
 }
 
 field_array_t *field_array_construct(void) {
-  field_array_t *field_array_ptr =
-      (field_array_t *)malloc(sizeof(field_array_t));
+  field_array_t *field_array_ptr = (field_array_t *)malloc(sizeof(field_array_t));
   if (field_array_ptr) {
     field_array_ptr->num_fields = 0;
     field_array_ptr->keys = NULL;
@@ -52,9 +51,7 @@ void field_array_set_value(field_array_t *field_array_ptr, size_t field_number, 
   field_array_ptr->values[field_number] = value;
 }
 
-size_t field_array_get_num_fields(const field_array_t *field_array_ptr) {
-  return field_array_ptr->num_fields;
-}
+size_t field_array_get_num_fields(const field_array_t *field_array_ptr) { return field_array_ptr->num_fields; }
 
 const char *field_array_get_key(const field_array_t *field_array_ptr, size_t field_number) {
   return field_array_ptr->keys[field_number];

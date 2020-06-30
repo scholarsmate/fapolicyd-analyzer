@@ -17,8 +17,7 @@ struct parse_context_struct {
 };
 
 parse_context_t *construct_parse_context(void) {
-  parse_context_t *parse_ctx_ptr =
-      (parse_context_t *)malloc(sizeof(parse_context_t));
+  parse_context_t *parse_ctx_ptr = (parse_context_t *)malloc(sizeof(parse_context_t));
   if (parse_ctx_ptr) {
     parse_ctx_ptr->subject_fields_ptr = field_array_construct();
     if (!parse_ctx_ptr->subject_fields_ptr) {
@@ -44,14 +43,12 @@ void destroy_parse_context(parse_context_t *parse_ctx_ptr) {
 }
 
 bool is_audit_record(const char *line) {
-  return (line[0] == 'r' && line[1] == 'u' && line[2] == 'l' &&
-          line[3] == 'e' && line[4] == '=');
+  return (line[0] == 'r' && line[1] == 'u' && line[2] == 'l' && line[3] == 'e' && line[4] == '=');
 }
 
 inline bool is_rule(const char *line) {
   if (line[0] == 'a') {
-    return (line[1] == 'l' && line[2] == 'l' && line[3] == 'o' &&
-            line[4] == 'w');
+    return (line[1] == 'l' && line[2] == 'l' && line[3] == 'o' && line[4] == 'w');
   } else if (line[0] == 'd') {
     return (line[1] == 'e' && line[2] == 'n' && line[3] == 'y');
   }
@@ -169,9 +166,7 @@ int parse(parse_context_t *parse_ctx_ptr, char *line) {
   }
   if (*(--probe) == '\n')
     *probe = '\0'; // gobble up trailing newlines
-  return get_number_of_object_fields(parse_ctx_ptr) == parsed_fields
-             ? OK
-             : PARSE_ERROR;
+  return get_number_of_object_fields(parse_ctx_ptr) == parsed_fields ? OK : PARSE_ERROR;
 }
 
 size_t get_number_of_subject_fields(const parse_context_t *parse_ctx_ptr) {
@@ -182,12 +177,10 @@ size_t get_number_of_object_fields(const parse_context_t *parse_ctx_ptr) {
   return field_array_get_num_fields(parse_ctx_ptr->object_fields_ptr);
 }
 
-int get_subject_field(const parse_context_t *parse_ctx_ptr, field_t *field_ptr,
-                      size_t field_number) {
+int get_subject_field(const parse_context_t *parse_ctx_ptr, field_t *field_ptr, size_t field_number) {
   return field_array_get_field(parse_ctx_ptr->subject_fields_ptr, field_ptr, field_number);
 }
 
-int get_object_field(const parse_context_t *parse_ctx_ptr, field_t *field_ptr,
-                     size_t field_number) {
+int get_object_field(const parse_context_t *parse_ctx_ptr, field_t *field_ptr, size_t field_number) {
   return field_array_get_field(parse_ctx_ptr->object_fields_ptr, field_ptr, field_number);
 }

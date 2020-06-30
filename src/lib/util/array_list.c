@@ -22,9 +22,7 @@ array_list_t *array_list_construct(void) {
 
 int array_list_initialize(array_list_t *list, size_t size) {
   if (list->capacity < size) {
-    size_t new_capacity = (list->capacity < ARRAY_LIST_DEFAULT_CAPACITY)
-                              ? ARRAY_LIST_DEFAULT_CAPACITY
-                              : list->capacity;
+    size_t new_capacity = (list->capacity < ARRAY_LIST_DEFAULT_CAPACITY) ? ARRAY_LIST_DEFAULT_CAPACITY : list->capacity;
     while (new_capacity < size) {
       new_capacity *= 2;
     }

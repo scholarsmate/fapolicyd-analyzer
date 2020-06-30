@@ -1,9 +1,9 @@
 #include "hash_table.h"
 #include "error_codes.h"
 #include <inttypes.h>
+#include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <stdio.h>
 
 /*****************************************************************************
  * Private
@@ -23,8 +23,7 @@ typedef struct hash_table_struct {
   size_t used_nodes;
 } hash_table_t;
 
-static int _assign_node(hash_table_t *table, const char *key, void *value,
-                        uint64_t hash, size_t index) {
+static int _assign_node(hash_table_t *table, const char *key, void *value, uint64_t hash, size_t index) {
   hash_table_node_t *new_node_ptr = malloc(sizeof(hash_table_node_t));
   if (new_node_ptr) {
     char *new_key = strdup(key);
@@ -95,7 +94,8 @@ static int _rehash_table(hash_table_t *table) {
         abort();
       }
       if (i != index) { // we are moving this node
-        if (OK != (rc = _assign_node(table, table->nodes[i]->key, table->nodes[i]->value, table->nodes[i]->hash, index))) {
+        if (OK !=
+            (rc = _assign_node(table, table->nodes[i]->key, table->nodes[i]->value, table->nodes[i]->hash, index))) {
           return rc;
         }
         _free_index(table, i);
@@ -116,8 +116,7 @@ static bool _table_remove(hash_table_t *table, const char *key, uint64_t hash) {
   return true;
 }
 
-static int _table_add(hash_table_t *table, const char *key, void *value,
-                      uint64_t hash) {
+static int _table_add(hash_table_t *table, const char *key, void *value, uint64_t hash) {
   size_t index;
   // Remove any existing entry
   if (_get_index(table, key, hash, &index)) {
@@ -130,8 +129,7 @@ static int _table_add(hash_table_t *table, const char *key, void *value,
     size_t i;
     size_t orig_num_nodes = table->number_nodes;
     size_t num_nodes = orig_num_nodes << 1; // we want to double each time
-    hash_table_node_t **tmp =
-        realloc(table->nodes, num_nodes * sizeof(hash_table_node_t *));
+    hash_table_node_t **tmp = realloc(table->nodes, num_nodes * sizeof(hash_table_node_t *));
     if (tmp == NULL || table->nodes == NULL) {
       return ALLOCATION_ERROR;
     }
@@ -193,14 +191,11 @@ bool hash_table_contains(const hash_table_t *table, const char *key) {
   return _get_index(table, key, _hash(key), &index);
 }
 
-bool hash_table_remove(hash_table_t *table, const char *key) {
-  return _table_remove(table, key, _hash(key));
-}
+bool hash_table_remove(hash_table_t *table, const char *key) { return _table_remove(table, key, _hash(key)); }
 
 size_t hash_table_count(const hash_table_t *table) { return table->used_nodes; }
 
-char const *hash_table_next(const hash_table_t *table, size_t *index,
-                            void **value) {
+char const *hash_table_next(const hash_table_t *table, size_t *index, void **value) {
   size_t i;
   for (i = *index; i < table->number_nodes; ++i) {
     if (table->nodes[i] != NULL) {

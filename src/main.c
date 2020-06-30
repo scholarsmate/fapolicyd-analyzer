@@ -25,19 +25,13 @@ typedef struct rules_struct {
   hash_set_t *deny_rules;
 } rules_t;
 
-hash_set_t *get_allow_rules(rules_t *rules_ptr) {
-  return rules_ptr->allow_rules;
-}
+hash_set_t *get_allow_rules(rules_t *rules_ptr) { return rules_ptr->allow_rules; }
 
-void set_allow_rules(rules_t *rules_ptr, hash_set_t *hash_set_ptr) {
-  rules_ptr->allow_rules = hash_set_ptr;
-}
+void set_allow_rules(rules_t *rules_ptr, hash_set_t *hash_set_ptr) { rules_ptr->allow_rules = hash_set_ptr; }
 
 hash_set_t *get_deny_rules(rules_t *rules_ptr) { return rules_ptr->deny_rules; }
 
-void set_deny_rules(rules_t *rules_ptr, hash_set_t *hash_set_ptr) {
-  rules_ptr->deny_rules = hash_set_ptr;
-}
+void set_deny_rules(rules_t *rules_ptr, hash_set_t *hash_set_ptr) { rules_ptr->deny_rules = hash_set_ptr; }
 
 rules_t *rules_construct(void) {
   rules_t *rules_ptr = malloc(sizeof(rules_t));
@@ -78,13 +72,12 @@ const char *get_object_value(parse_context_t *parse_ctx_ptr, const char *key) {
   return NULL;
 }
 
-int rule_create(char *buf, size_t buf_len, const char *dec, const char *perm,
-                uint32_t uid, const char *exe, bool trust_subject,
-                const char *path, bool trust_object) {
+int rule_create(char *buf, size_t buf_len, const char *dec, const char *perm, uint32_t uid, const char *exe,
+                bool trust_subject, const char *path, bool trust_object) {
   const char *sub_trust = (trust_subject) ? " trust=1" : "";
   const char *obj_trust = (trust_object) ? " trust=1" : "";
-  return snprintf(buf, buf_len - 1, "%s perm=%s auid=%u exe=%s%s : path=%s%s",
-                  dec, perm, uid, exe, sub_trust, path, obj_trust);
+  return snprintf(buf, buf_len - 1, "%s perm=%s auid=%u exe=%s%s : path=%s%s", dec, perm, uid, exe, sub_trust, path,
+                  obj_trust);
 }
 
 void process_record(parse_context_t *parse_ctx_ptr, rules_t *rules_ptr) {
@@ -97,8 +90,7 @@ void process_record(parse_context_t *parse_ctx_ptr, rules_t *rules_ptr) {
   bool trust_object = true;
   const char *path = get_object_value(parse_ctx_ptr, "path");
   char rule[2048];
-  rule_create(rule, sizeof(rule), dec, perm, uid, exe, trust_subject, path,
-              trust_object);
+  rule_create(rule, sizeof(rule), dec, perm, uid, exe, trust_subject, path, trust_object);
   hash_set_add(get_allow_rules(rules_ptr), rule);
 }
 

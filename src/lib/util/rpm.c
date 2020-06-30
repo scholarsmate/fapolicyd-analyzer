@@ -8,20 +8,17 @@
 #include <sys/stat.h>
 
 table_t *package_get_rpm_info(void) {
-  static const char *command =
-      "/usr/bin/rpm -qa --queryformat \""
-      "%{NVRA}\t%{NAME}\t%{VERSION}\t%{RELEASE}\t%{ARCH}\t"
-      "%{SIZE}\t%{SHA256HEADER}\t%{BUILDTIME}\t%{INSTALLTIME}\t%{GROUP}\t"
-      "%{URL}\t%{RPMVERSION}\t%{SUMMARY}\t"
-      "%|DSAHEADER?{%{DSAHEADER:pgpsig}}:{%|RSAHEADER?{%{RSAHEADER:pgpsig}}:{%|"
-      "SIGGPG?{%{SIGGPG:pgpsig}}:{%|SIGPGP?{%{SIGPGP:pgpsig}}:{(none)}|}|}|}|"
-      "\n\"";
-  static const char *column_names[] = {
-      "NVRA", "NAME",         "VERSION",   "RELEASE",     "ARCH",
-      "SIZE", "SHA256HEADER", "BUILDTIME", "INSTALLTIME", "GROUP",
-      "URL",  "RPMVERSION",   "SUMMARY",   "SIGNATURE"};
-  static const size_t column_count =
-      sizeof(column_names) / sizeof(const char *);
+  static const char *command = "/usr/bin/rpm -qa --queryformat \""
+                               "%{NVRA}\t%{NAME}\t%{VERSION}\t%{RELEASE}\t%{ARCH}\t"
+                               "%{SIZE}\t%{SHA256HEADER}\t%{BUILDTIME}\t%{INSTALLTIME}\t%{GROUP}\t"
+                               "%{URL}\t%{RPMVERSION}\t%{SUMMARY}\t"
+                               "%|DSAHEADER?{%{DSAHEADER:pgpsig}}:{%|RSAHEADER?{%{RSAHEADER:pgpsig}}:{%|"
+                               "SIGGPG?{%{SIGGPG:pgpsig}}:{%|SIGPGP?{%{SIGPGP:pgpsig}}:{(none)}|}|}|}|"
+                               "\n\"";
+  static const char *column_names[] = {"NVRA", "NAME",         "VERSION",   "RELEASE",     "ARCH",
+                                       "SIZE", "SHA256HEADER", "BUILDTIME", "INSTALLTIME", "GROUP",
+                                       "URL",  "RPMVERSION",   "SUMMARY",   "SIGNATURE"};
+  static const size_t column_count = sizeof(column_names) / sizeof(const char *);
   const char *record[column_count];
 
   table_t *table_ptr = NULL;
@@ -57,10 +54,8 @@ table_t *package_get_rpm_info(void) {
   return table_ptr;
 }
 
-table_t *
-package_get_rpm_files_info(const table_t *rpm_table_ptr,
-                           package_progress_callback_t progress_callback,
-                           void *progress_client_ptr) {
+table_t *package_get_rpm_files_info(const table_t *rpm_table_ptr, package_progress_callback_t progress_callback,
+                                    void *progress_client_ptr) {
   size_t nvra_col_num = 0;
   const size_t row_count = table_get_row_count(rpm_table_ptr);
   size_t i = 0;
@@ -73,9 +68,8 @@ package_get_rpm_files_info(const table_t *rpm_table_ptr,
   char *cptr = NULL;
   size_t col_num = 0;
 
-  static const char *column_names[] = {
-      "NVRA", "Path",  "Size",    "Field_3", "SHA256",   "Permissions",
-      "User", "Group", "Field_8", "Field_9", "Field_10", "Field_11"};
+  static const char *column_names[] = {"NVRA", "Path",  "Size",    "Field_3", "SHA256",   "Permissions",
+                                       "User", "Group", "Field_8", "Field_9", "Field_10", "Field_11"};
   static const size_t column_count = sizeof(column_names) / sizeof(char *);
   const char *record[column_count];
 
@@ -125,8 +119,7 @@ package_get_rpm_files_info(const table_t *rpm_table_ptr,
 }
 
 /* Needs to be run as root to read much of the system files */
-table_t *package_hash_files(const table_t *rpm_files_info_table_ptr,
-                            package_progress_callback_t progress_callback,
+table_t *package_hash_files(const table_t *rpm_files_info_table_ptr, package_progress_callback_t progress_callback,
                             void *progress_client_ptr) {
   const size_t row_count = table_get_row_count(rpm_files_info_table_ptr);
   size_t file_path_col_num = 0;
@@ -135,17 +128,14 @@ table_t *package_hash_files(const table_t *rpm_files_info_table_ptr,
   char hash[80];
   char buf[80];
   static const char *column_names[] = {"NVRA", "Path", "Size", "SHA256"};
-  static const size_t column_count =
-      sizeof(column_names) / sizeof(const char *);
+  static const size_t column_count = sizeof(column_names) / sizeof(const char *);
   const char *record[column_count];
   table_t *table_ptr = NULL;
 
-  if (OK != table_find_column_number(rpm_files_info_table_ptr, "Path",
-                                     &file_path_col_num)) {
+  if (OK != table_find_column_number(rpm_files_info_table_ptr, "Path", &file_path_col_num)) {
     abort();
   };
-  if (OK != table_find_column_number(rpm_files_info_table_ptr, "NVRA",
-                                     &nvra_col_num)) {
+  if (OK != table_find_column_number(rpm_files_info_table_ptr, "NVRA", &nvra_col_num)) {
     abort();
   };
   CHECK_PTR(table_ptr = table_construct());
@@ -155,14 +145,12 @@ table_t *package_hash_files(const table_t *rpm_files_info_table_ptr,
   record[3] = hash;
   for (i = 0; i < row_count; ++i) {
     record[0] = table_get_value(rpm_files_info_table_ptr, nvra_col_num, i);
-    const char *file_path = record[1] =
-        table_get_value(rpm_files_info_table_ptr, file_path_col_num, i);
+    const char *file_path = record[1] = table_get_value(rpm_files_info_table_ptr, file_path_col_num, i);
     struct stat st;
     if (0 != access(file_path, R_OK) || 0 != stat(file_path, &st)) {
       continue;
     }
-    if (S_ISREG(st.st_mode) && 0 < st.st_size &&
-        OK == sha256_file(hash, sizeof(hash), file_path)) {
+    if (S_ISREG(st.st_mode) && 0 < st.st_size && OK == sha256_file(hash, sizeof(hash), file_path)) {
       snprintf(buf, sizeof(buf) - 1, "%lld", st.st_size);
       table_append_row(table_ptr, (const char **)record);
     }

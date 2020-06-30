@@ -21,8 +21,7 @@ typedef struct hash_set_struct {
   size_t used_nodes;
 } hash_set_t;
 
-static int _assign_node(hash_set_t *set, const char *key, uint64_t hash,
-                        size_t index) {
+static int _assign_node(hash_set_t *set, const char *key, uint64_t hash, size_t index) {
   hash_set_node_t *new_node_ptr = malloc(sizeof(hash_set_node_t));
   if (new_node_ptr) {
     char *new_key = strdup(key);
@@ -43,8 +42,7 @@ static void _free_index(hash_set_t *set, size_t index) {
   set->nodes[index] = NULL;
 }
 
-static bool _get_index(const hash_set_t *set, const char *key, uint64_t hash,
-                       size_t *index) {
+static bool _get_index(const hash_set_t *set, const char *key, uint64_t hash, size_t *index) {
   size_t idx = hash % set->number_nodes;
   size_t i = idx;
   while (1) {
@@ -92,8 +90,7 @@ static int _rehash_set(hash_set_t *set) {
         abort();
       }
       if (i != index) { // we are moving this node
-        if (OK != (rc = _assign_node(set, set->nodes[i]->key,
-                                     set->nodes[i]->hash, index))) {
+        if (OK != (rc = _assign_node(set, set->nodes[i]->key, set->nodes[i]->hash, index))) {
           return rc;
         }
         _free_index(set, i);
@@ -113,8 +110,7 @@ static int _set_add(hash_set_t *set, const char *key, uint64_t hash) {
     size_t i;
     size_t orig_num_nodes = set->number_nodes;
     size_t num_nodes = orig_num_nodes << 1; // we want to double each time
-    hash_set_node_t **tmp =
-        realloc(set->nodes, num_nodes * sizeof(hash_set_node_t *));
+    hash_set_node_t **tmp = realloc(set->nodes, num_nodes * sizeof(hash_set_node_t *));
     if (tmp == NULL || set->nodes == NULL) {
       return ALLOCATION_ERROR;
     }
@@ -167,9 +163,7 @@ void hash_set_destroy(hash_set_t *set) {
   free(set);
 }
 
-int hash_set_add(hash_set_t *set, const char *key) {
-  return _set_add(set, key, _hash(key));
-}
+int hash_set_add(hash_set_t *set, const char *key) { return _set_add(set, key, _hash(key)); }
 
 bool hash_set_contains(const hash_set_t *set, const char *key) {
   size_t index;

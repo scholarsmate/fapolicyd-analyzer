@@ -39,8 +39,7 @@ void table_destroy(table_t *table_ptr) {
   }
 }
 
-int table_initialize(table_t *table_ptr, const char **column_names,
-                     size_t column_count) {
+int table_initialize(table_t *table_ptr, const char **column_names, size_t column_count) {
   char *col_name = NULL;
   char **col_names = NULL;
   UT_array **cols = NULL;
@@ -65,20 +64,13 @@ int table_initialize(table_t *table_ptr, const char **column_names,
   return OK;
 }
 
-size_t table_get_column_count(const table_t *table_ptr) {
-  return table_ptr->column_count;
-}
+size_t table_get_column_count(const table_t *table_ptr) { return table_ptr->column_count; }
 
-size_t table_get_row_count(const table_t *table_ptr) {
-  return utarray_len(table_ptr->columns[0]);
-}
+size_t table_get_row_count(const table_t *table_ptr) { return utarray_len(table_ptr->columns[0]); }
 
-const char *table_get_column_name(const table_t *table_ptr, size_t col_num) {
-  return table_ptr->column_names[col_num];
-}
+const char *table_get_column_name(const table_t *table_ptr, size_t col_num) { return table_ptr->column_names[col_num]; }
 
-int table_find_column_number(const table_t *table_ptr, const char *col_name,
-                             size_t *col_num_ptr) {
+int table_find_column_number(const table_t *table_ptr, const char *col_name, size_t *col_num_ptr) {
   const size_t column_count = table_get_column_count(table_ptr);
   size_t i = 0;
 
@@ -91,8 +83,7 @@ int table_find_column_number(const table_t *table_ptr, const char *col_name,
   return NOT_FOUND;
 }
 
-const char *table_get_value(const table_t *table_ptr, size_t col_num,
-                            size_t row_num) {
+const char *table_get_value(const table_t *table_ptr, size_t col_num, size_t row_num) {
   return *(const char **)utarray_eltptr(table_ptr->columns[col_num], row_num);
 }
 
@@ -105,19 +96,18 @@ int table_append_row(table_t *table_ptr, const char **row) {
   return OK;
 }
 
-int table_append_column(table_t *table_ptr, const char *column_name,
-                        const char **column) {
+int table_append_column(table_t *table_ptr, const char *column_name, const char **column) {
   size_t i = 0;
   const size_t row_count = table_get_row_count(table_ptr);
   UT_array *new_col = NULL;
 
   utarray_new(new_col, &ut_str_icd);
   utarray_reserve(new_col, row_count);
-  for(i = 0; i < row_count; ++i) {
+  for (i = 0; i < row_count; ++i) {
     utarray_push_back(new_col, &column[i]);
   }
 
-  size_t column_count = ++table_ptr->column_count;
+  const size_t column_count = ++table_ptr->column_count;
   CHECK_PTR(table_ptr->column_names = realloc(table_ptr->column_names, column_count * sizeof(const char *)));
   CHECK_PTR(table_ptr->columns = realloc(table_ptr->columns, column_count * sizeof(UT_array)));
   CHECK_PTR(table_ptr->column_names[column_count - 1] = strdup(column_name));
@@ -180,12 +170,9 @@ void table_index_destroy(table_index_t *table_index_ptr) {
   }
 }
 
-size_t table_index_count(const table_index_t *table_index_ptr) {
-  return HASH_COUNT(table_index_ptr);
-}
+size_t table_index_count(const table_index_t *table_index_ptr) { return HASH_COUNT(table_index_ptr); }
 
-const row_index_t *table_index_find(const table_index_t *table_index_ptr,
-                                    const char *key) {
+const row_index_t *table_index_find(const table_index_t *table_index_ptr, const char *key) {
   table_index_t *probe = NULL;
   HASH_FIND_STR(table_index_ptr, key, probe);
   return (probe) ? &probe->index : NULL;

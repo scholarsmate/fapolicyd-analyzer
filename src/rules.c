@@ -21,4 +21,3 @@ allow:open:root,apache:root,apache,webdev:/var/www/*
 deny:any:*:*:*
 
 */
-

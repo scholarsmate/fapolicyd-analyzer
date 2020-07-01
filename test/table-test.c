@@ -2,7 +2,7 @@
  * TESTING
  ****************************************************************************/
 
-#include <lib/util/table.h>
+#include <libfapolicyd-analyzer/table.h>
 #include <stdio.h>
 #include <stdlib.h>
 

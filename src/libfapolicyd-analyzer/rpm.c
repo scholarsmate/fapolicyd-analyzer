@@ -1,7 +1,7 @@
 #include "rpm.h"
 #include "detail/macros.h"
 #include "error_codes.h"
-#include <lib/util/sha256.h>
+#include "sha256.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>

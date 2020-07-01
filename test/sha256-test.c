@@ -1,4 +1,4 @@
-#include <lib/util/sha256.h>
+#include <libfapolicyd-analyzer/sha256.h>
 #include <stdio.h>
 
 int main(void) {

@@ -2,7 +2,7 @@
  * TESTING
  ****************************************************************************/
 
-#include <lib/util/rpm.h>
+#include <libfapolicyd-analyzer/rpm.h>
 #include <stdio.h>
 #include <stdlib.h>
 

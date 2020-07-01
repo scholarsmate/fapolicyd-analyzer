@@ -3,10 +3,10 @@ allow perm=execute auid=1001 exe=/… trust=1 : path=/… trust=1
 allow perm=open auid=1001 exe=/… trust=1 : path=/… trust=1
 deny_audit perm=execute auid=1001 exe=/usr/libexec/platform-python3.6 : all
 */
-#include "lib/util/error_codes.h"
-#include "lib/util/field_array.h"
-#include "lib/util/hash_set.h"
-#include "lib/util/parse.h"
+#include <libfapolicyd-analyzer/error_codes.h>
+#include <libfapolicyd-analyzer/util/field_array.h>
+#include <libfapolicyd-analyzer/util/hash_set.h>
+#include <libfapolicyd-analyzer/parse.h>
 #include <inttypes.h>
 #include <stdbool.h>
 #include <stdio.h>

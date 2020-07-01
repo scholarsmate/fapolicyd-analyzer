@@ -1,8 +1,8 @@
 /*****************************************************************************
  * TESTING
  ****************************************************************************/
-#include <lib/util/error_codes.h>
-#include <lib/util/parse.h>
+#include <libfapolicyd-analyzer/error_codes.h>
+#include <libfapolicyd-analyzer/parse.h>
 #include <stdio.h>
 #include <stdlib.h>
 

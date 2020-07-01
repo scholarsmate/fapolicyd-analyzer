@@ -7,6 +7,8 @@ libfapolicyd_analyzer_la_SOURCES = \
 	libfapolicyd-analyzer/detail/utarray.h \
 	libfapolicyd-analyzer/detail/uthash.h \
 	libfapolicyd-analyzer/error_codes.h \
+	libfapolicyd-analyzer/field_array.c \
+	libfapolicyd-analyzer/field_array.h \
 	libfapolicyd-analyzer/match.c \
 	libfapolicyd-analyzer/match.h \
 	libfapolicyd-analyzer/parse.c \
@@ -41,6 +43,8 @@ _fapolicyanalyzer_la_SOURCES = \
 	bindings/fapolicyanalyzer.i \
 	libfapolicyd-analyzer/error_codes.h \
 	libfapolicyd-analyzer/match.h \
+	libfapolicyd-analyzer/field_array.h \
+	libfapolicyd-analyzer/parse.h \
 	libfapolicyd-analyzer/rpm.h \
 	libfapolicyd-analyzer/sha256.h \
 	libfapolicyd-analyzer/table.h

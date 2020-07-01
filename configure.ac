@@ -61,5 +61,6 @@ AC_CHECK_FUNCS([memmove memset strchr strdup])
 
 AC_CONFIG_FILES([Makefile
                  test/Makefile
-                 src/Makefile])
+                 src/Makefile
+                 src/bindings/Makefile])
 AC_OUTPUT

@@ -20,27 +20,15 @@ libfapolicyd_analyzer_la_SOURCES = \
 	libfapolicyd-analyzer/table.c \
 	libfapolicyd-analyzer/table.h
 
-# This is the Python module interfacing with libfapolicyd-analyzer.
-# fapolicyanalyzer.py and fapolicyanalyzer_wrap.c are created by SWIG from bindings/fapolicyanalyzer.i.
-# Put these in the build tree.
-BUILT_SOURCES = $(builddir)/fapolicyanalyzer.py $(builddir)/fapolicyanalyzer_wrap.c
-
-CLEANFILES =  $(builddir)/fapolicyanalyzer.py $(builddir)/fapolicyanalyzer_wrap.c
-
-# Tell Make how to create the generated SWIG files
-$(builddir)/fapolicyanalyzer.py $(builddir)/fapolicyanalyzer_wrap.c: bindings/fapolicyanalyzer.i
-	$(SWIG) $(AX_SWIG_PYTHON_OPT) -I$(srcdir) -o $@ $<
-
 # Ask autotools to install the generated Python file.
-python_PYTHON = $(builddir)/fapolicyanalyzer.py
+python_PYTHON = $(srcdir)/bindings/python/fapolicyanalyzer.py
 
 # This is the Python module.
 pyexec_LTLIBRARIES = _fapolicyanalyzer.la
 
-# It is composed of the generated C file and has other dependencies.
+# It is composed of the wrapper C file and has other dependencies.
 _fapolicyanalyzer_la_SOURCES = \
-	$(builddir)/fapolicyanalyzer_wrap.c \
-	bindings/fapolicyanalyzer.i \
+	$(srcdir)/bindings/python/fapolicyanalyzer_wrap.c \
 	libfapolicyd-analyzer/error_codes.h \
 	libfapolicyd-analyzer/match.h \
 	libfapolicyd-analyzer/field_array.h \
